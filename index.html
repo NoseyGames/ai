@@ -52,7 +52,8 @@
 <header class="glass mx-4 mt-4">
     <h1>nikeai</h1>
     <div class="api-pill">
-        <button id="clear-btn" class="p-2 text-gray-400 hover:text-white"><i data-lucide="trash-2"></i></button>
+        <button id="copy-history-btn" class="p-2 text-gray-400 hover:text-white" title="Copy History"><i data-lucide="clipboard-list"></i></button>
+        <button id="clear-btn" class="p-2 text-gray-400 hover:text-white" title="Clear Chat"><i data-lucide="trash-2"></i></button>
         <input id="api-key" type="password" placeholder="gsk_..." autocomplete="off">
         <button id="eye-btn" class="p-1"><i data-lucide="eye" id="eye"></i></button>
         <button id="save-btn" class="glow-btn text-xs">save</button>
@@ -68,7 +69,7 @@
             <button id="img-btn" class="p-2 text-gray-400 hover:text-white"><i data-lucide="image"></i></button>
             <input type="file" id="file-input" accept="image/*" hidden>
             <input id="user-input" placeholder="Type a command..." autocomplete="off">
-            <button id="stop-btn" class="p-2 text-red-500 hidden"><i data-lucide="square"></i></button>
+            <button id="stop-btn" class="p-2 text-red-500 hidden" title="Stop Generation"><i data-lucide="square"></i></button>
             <button id="send-btn" class="glow-btn"><i data-lucide="send" class="w-5 h-5"></i></button>
         </div>
     </div>
@@ -173,7 +174,6 @@ async function send() {
     document.getElementById('image-preview-container').style.display = 'none';
     addMsg('user', userContent);
     
-    const tempImg = currentImageBase64;
     currentImageBase64 = null;
     toggleInputState(true);
     
@@ -246,11 +246,21 @@ document.getElementById('eye-btn').onclick = () => {
     i.type = i.type === 'password' ? 'text' : 'password';
 };
 document.getElementById('clear-btn').onclick = () => { localStorage.removeItem('nike_history'); chatHistory = []; document.getElementById('chat').innerHTML = ''; };
+document.getElementById('copy-history-btn').onclick = () => {
+    const formatted = chatHistory.map(m => `**${m.role.toUpperCase()}**:\n${m.content}\n\n---`).join('\n\n');
+    navigator.clipboard.writeText(formatted).then(() => {
+        const btn = document.getElementById('copy-history-btn');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i data-lucide="check" class="text-green-500"></i>';
+        lucide.createIcons();
+        setTimeout(() => { btn.innerHTML = originalHtml; lucide.createIcons(); }, 2000);
+    });
+};
 document.getElementById('send-btn').onclick = send;
 document.getElementById('stop-btn').onclick = stopGeneration;
 document.getElementById('user-input').onkeypress = (e) => { if (e.key === 'Enter') send(); };
 
-chatHistory.forEach(m => addMsg(m.role, m.content, false));
+chatHistory.forEach(m => addMsg(m.role, m.content, m.role === 'user'));
 lucide.createIcons();
 </script>
 </body>
